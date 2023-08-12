@@ -36,7 +36,7 @@ class MyHomePage extends ConsumerWidget {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(title),
       ),
-      body: AppPaginationList(
+      body: AppPaginationList<String>(
         limit: 10,
         pageValue: (page) => ref.watch(postsProvider(page: page)),
         itemBuilder: (value) => ListTile(title: Text(value)),
@@ -48,31 +48,36 @@ class MyHomePage extends ConsumerWidget {
 //Fake pagination list
 
 @riverpod
-FutureOr<Pagination> posts(PostsRef ref, {int page = 1}) {
+FutureOr<Pagination<String>> posts(PostsRef ref, {int page = 1}) {
   return Future.delayed(
     const Duration(seconds: 2),
     () {
-      if (page > 2) return Pagination(data: ['a', 'b'], totalItems: 32);
-      return Pagination(data: List.generate(10, (index) => 'Post $page $index'), totalItems: 32);
+      if (page > 2) return Pagination<String>(data: ['a', 'b'], totalItems: 32);
+      return Pagination<String>(
+          data: List.generate(10, (index) => 'Post $page $index'),
+          totalItems: 32);
     },
   );
 }
 
-class Pagination<T>{
+class Pagination<T> {
   Pagination({required this.data, required this.totalItems});
   final List<T> data;
   final int totalItems;
 }
 
-class AppPaginationList extends StatelessWidget {
-  const AppPaginationList({super.key, required this.limit, required this.pageValue, required this.itemBuilder});
+class AppPaginationList<T> extends StatelessWidget {
+  const AppPaginationList(
+      {super.key,
+      required this.limit,
+      required this.pageValue,
+      required this.itemBuilder});
   final int limit;
-  final AsyncValue<Pagination> Function(int page) pageValue;
-  final Widget Function(dynamic value) itemBuilder;
+  final AsyncValue<Pagination<T>> Function(int page) pageValue;
+  final Widget Function(T value) itemBuilder;
   @override
   Widget build(BuildContext context) {
-    final itemCount = pageValue(1).asData?.value.totalItems;
-    return ListView.separated(
+    return ListView.builder(
       itemBuilder: (context, index) {
         final page = index ~/ limit;
         final itemIndex = index % limit;
@@ -96,8 +101,6 @@ class AppPaginationList extends StatelessWidget {
           ),
         );
       },
-      separatorBuilder: (context, index) => const Divider(),
-      itemCount: itemCount ?? 0,
     );
   }
 }

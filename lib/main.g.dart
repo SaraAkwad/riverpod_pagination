@@ -6,7 +6,7 @@ part of 'main.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$postsHash() => r'c6defa84b61e668e2f5cdbe79c28340c78758ff0';
+String _$postsHash() => r'46e84a1841d5b6fe11756be1ac20c5ae1290dd0d';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -29,14 +29,14 @@ class _SystemHash {
   }
 }
 
-typedef PostsRef = AutoDisposeFutureProviderRef<Pagination<dynamic>>;
+typedef PostsRef = AutoDisposeFutureProviderRef<Pagination<String>>;
 
 /// See also [posts].
 @ProviderFor(posts)
 const postsProvider = PostsFamily();
 
 /// See also [posts].
-class PostsFamily extends Family<AsyncValue<Pagination<dynamic>>> {
+class PostsFamily extends Family<AsyncValue<Pagination<String>>> {
   /// See also [posts].
   const PostsFamily();
 
@@ -74,7 +74,7 @@ class PostsFamily extends Family<AsyncValue<Pagination<dynamic>>> {
 }
 
 /// See also [posts].
-class PostsProvider extends AutoDisposeFutureProvider<Pagination<dynamic>> {
+class PostsProvider extends AutoDisposeFutureProvider<Pagination<String>> {
   /// See also [posts].
   PostsProvider({
     this.page = 1,
