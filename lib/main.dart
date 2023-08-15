@@ -32,14 +32,17 @@ class MyHomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(title),
-      ),
-      body: AppPaginationList<String>(
-        limit: 10,
-        pageValue: (page) => ref.watch(postsProvider(page: page)),
-        itemBuilder: (value) => ListTile(title: Text(value)),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            title: Text(title),
+          ),
+          AppPaginationSliverList<String>(
+            limit: 10,
+            pageValue: (page) => ref.watch(postsProvider(page: page)),
+            itemBuilder: (value) => ListTile(title: Text(value)),
+          )
+        ],
       ),
     );
   }
@@ -66,19 +69,30 @@ class Pagination<T> {
   final int totalItems;
 }
 
-class AppPaginationList<T> extends StatelessWidget {
-  const AppPaginationList(
-      {super.key,
-      required this.limit,
-      required this.pageValue,
-      required this.itemBuilder});
+abstract class AppPagination<T> extends StatelessWidget {
+  const AppPagination({
+    Key? key,
+    required this.limit,
+    required this.pageValue,
+    required this.itemBuilder,
+  }) : super(key: key);
+
   final int limit;
   final AsyncValue<Pagination<T>> Function(int page) pageValue;
   final Widget Function(T value) itemBuilder;
+
+  Widget buildList(
+    BuildContext context,
+    int? itemCount,
+    Widget? Function(BuildContext context, int index) itemBuilder,
+  );
+
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemBuilder: (context, index) {
+    return buildList(
+      context,
+      null,
+      (context, index) {
         final page = index ~/ limit;
         final itemIndex = index % limit;
         return pageValue(page).when(
@@ -101,6 +115,60 @@ class AppPaginationList<T> extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class AppPaginationList<T> extends AppPagination<T> {
+  const AppPaginationList({
+    Key? key,
+    required int limit,
+    required AsyncValue<Pagination<T>> Function(int page) pageValue,
+    required Widget Function(T value) itemBuilder,
+  }) : super(
+          key: key,
+          limit: limit,
+          pageValue: pageValue,
+          itemBuilder: itemBuilder,
+        );
+
+  @override
+  Widget buildList(
+    BuildContext context,
+    int? itemCount,
+    Widget? Function(BuildContext context, int index) itemBuilder,
+  ) {
+    return ListView.builder(
+      itemCount: itemCount,
+      itemBuilder: itemBuilder,
+    );
+  }
+}
+
+class AppPaginationSliverList<T> extends AppPagination<T> {
+  const AppPaginationSliverList({
+    Key? key,
+    required int limit,
+    required AsyncValue<Pagination<T>> Function(int page) pageValue,
+    required Widget Function(T value) itemBuilder,
+  }) : super(
+          key: key,
+          limit: limit,
+          pageValue: pageValue,
+          itemBuilder: itemBuilder,
+        );
+
+  @override
+  Widget buildList(
+    BuildContext context,
+    int? itemCount,
+    Widget? Function(BuildContext context, int index) itemBuilder,
+  ) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        itemBuilder,
+        childCount: itemCount,
+      ),
     );
   }
 }
